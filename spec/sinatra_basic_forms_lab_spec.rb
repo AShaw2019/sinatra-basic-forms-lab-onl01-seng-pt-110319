@@ -1,87 +1,87 @@
+require 'pry'
 describe App do
 
-  describe 'GET /newteam' do
+  describe 'GET /' do
+
     it 'sends a 200 status code' do
-      get '/newteam'
+      get '/'
       expect(last_response.status).to eq(200)
     end
 
-    it 'renders basketball team form' do 
-      visit '/newteam'
+    it 'has a link with the text "List A Puppy"' do
+      visit '/'
+      expect(page).to have_link("List A Puppy")
+    end
+
+    it 'has a link to list a puppy that links to /new' do
+      visit '/'
+      expect(page).to have_link("List A Puppy", href: '/new')
+    end
+  end
+
+  describe 'GET /new' do
+    it 'sends a 200 status code' do
+      get '/new'
+      expect(last_response.status).to eq(200)
+    end
+
+    it 'renders a form that can POST a name, breed, and age' do
+      visit '/new'
+
       expect(page).to have_selector("form")
+
+      #form method attribute is a post
+      expect(page.find('form')[:method]).to match(/post/i)
+
       expect(page).to have_field(:name)
-      expect(page).to have_field(:coach)
-      expect(page).to have_field(:pg)
-      expect(page).to have_field(:sg)
-      expect(page).to have_field(:sf)
-      expect(page).to have_field(:pf)
-      expect(page).to have_field(:c)
+      expect(page).to have_field(:breed)
+      expect(page).to have_field(:age)
     end
   end
 
-  describe 'POST /team' do
-    it "displays the basketball team name in the browser" do 
-      visit '/newteam'
+  describe 'POST /puppy' do
 
-      fill_in(:name, :with => "Bballers")
-      click_button "submit"
-      expect(page).to have_text("Team Name: Bballers")
+    before(:all) do
+      visit '/new'
+
+      fill_in(:name, :with => "Butch")
+      fill_in(:breed, :with => "Mastiff")
+      fill_in(:age, :with => "6")
+
+      #the below css will match any element (input or button)
+      #with a type attribute set to submit
+      page.find(:css, '[type=submit]').click
     end
 
-    it "displays the coach's name in the browser" do
-      visit '/newteam'
-
-      fill_in(:coach, :with => "Walter")
-      click_button "submit"
-
-      expect(page).to have_text("Coach: Walter")
+    it "sends a 200 status code" do
+      expect(page.status_code).to eq(200)
     end
 
-    it "displays the point guard's name in the browser" do
-      visit '/newteam'
-
-      fill_in(:pg, :with => "Jeff")
-      click_button "submit"
-
-      expect(page).to have_text("Point Guard: Jeff")
+    it "recieves a request from /new at /puppy" do
+      expect(page.current_path).to eq("/puppy")
     end
 
-    it "displays the shooting guard's name in the browser" do
-      visit '/newteam'
+    it "displays the puppy information dynamically" do
+      # The \s below will match any whitespace
+      expect(page).to have_text(/Name:\s+Butch/i)
+      expect(page).to have_text(/Breed:\s+Mastiff/i)
+      expect(page).to have_text(/Age:\s+6 months/i)
 
-      fill_in(:sg, :with => "Ralph")
-      click_button "submit"
+      #now do it again, to be sure it's not hard-coded
+      visit '/new'
 
-      expect(page).to have_text("Shooting Guard: Ralph")
+      fill_in(:name, :with => "Byron")
+      fill_in(:breed, :with => "Poodle")
+      fill_in(:age, :with => "9")
+
+      #the below css will match any element (input or button)
+      #with a type attribute set to submit
+      page.find(:css, '[type=submit]').click
+
+      expect(page).to have_text(/Name:\s+Byron/i)
+      expect(page).to have_text(/Breed:\s+Poodle/i)
+      expect(page).to have_text(/Age:\s+9 months/i)
     end
-
-    it "displays the power forward's name in the browser" do
-      visit '/newteam'
-
-      fill_in(:pf, :with => "Danny")
-      click_button "submit"
-
-      expect(page).to have_text("Power Forward: Danny")
-    end
-
-    it "displays the shooting gaurd's name in the browser" do
-      visit '/newteam'
-
-      fill_in(:sg, :with => "Joe")
-      click_button "submit"
-
-      expect(page).to have_text("Shooting Guard: Joe")
-    end
-
-    it "displays the center's name in the browser" do
-      visit '/newteam'
-
-      fill_in(:c, :with => "Avi")
-      click_button "submit"
-
-      expect(page).to have_text("Center: Avi")
-    end
-
-
   end
+
 end
